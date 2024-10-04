@@ -14,5 +14,14 @@ namespace InsecureDeserialization
                 return formatter.Deserialize(ms);
             }
         }
+
+        public object DeserializeObject(byte[] data)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (MemoryStream stream = new MemoryStream(data))
+            {
+                return formatter.Deserialize(stream);
+            }
+        }
     }
 }

@@ -1,4 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using System.Net;
+using System.Reflection.Emit;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Xss.Server.Controllers
 {
@@ -28,6 +33,52 @@ namespace Xss.Server.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpGet(Name = "Search")]
+        public IActionResult Search(string query)
+        {
+            // assume query is '<script>alert('XSS')</script>'
+            string result = "You searched for: " + query;
+            return new ContentResult() { Content = result };
+        }
+
+        [HttpPost(Name = "UploadFile")]
+        public void SaveFile(IFormFile file)
+        {
+            string filePath = Path.Combine(@"C:\temp", file.FileName); //oef...
+            using var stream = new FileStream(filePath, FileMode.Create);
+            file.CopyTo(stream);
+        }
+
+        [HttpPost(Name = "ExecuteCommand")]
+        public void ExecuteCommand(string command)
+        {
+            Process.Start("cmd.exe", "/c " + command); //no no no
+        }
+
+        [HttpPost(Name = "CallWebService")]
+        public void CallWebService(string url)
+        {
+            WebClient client = new WebClient();
+            string response = client.DownloadString(url); //also no
+        }
+
+        [HttpGet(Name = "ReDosMe")]
+        public bool ReDosMe(string input)
+        {
+            const string pattern = "^[a-zA-Z0-9]*$";
+            return Regex.IsMatch(input, pattern);
+        }
+
+        [HttpPost(Name = "Inject")]
+        public void InjectSomething(string code)
+        {
+            var method = new DynamicMethod("Run", typeof(void), null);
+            var il = method.GetILGenerator();
+            il.EmitWriteLine($"Hello, {code}");
+            il.Emit(OpCodes.Ret);
+            method.CreateDelegate<Action>()();
         }
     }
 }
