@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Oopsies": {
+      "commandName": "Project",
+      "commandLineArgs": "\"echo hello\""
+    }
+  }
+}
